@@ -1,14 +1,16 @@
 import {describe, it, expect, vi} from "vitest";
-import {type Hero} from "../actors/hero.ts";
+import {type Hero, type ArmorLocations, make_armor_locations} from "../actors/hero.ts";
 import {type Monster} from "../actors/monster.ts";
 import * as Die from "../util/die.ts"
-import {enemy_takes_hit, hero_turn, run_combat_round} from "../combat.ts";
+import {enemy_takes_hit, hero_takes_hit, hero_turn, run_combat_round} from "../combat.ts";
 import {make_gauge} from "../util/gauge.ts";
 import {cloneDeep} from "lodash";
 
 describe('Combat', () => {
 
+    const mockD6 = vi.spyOn(Die, 'd6')
     const mockD10 = vi.spyOn(Die, 'd10')
+
     const test_hero: Hero = {
         name: 'Test Hero',
         accuracy: 7,
@@ -18,6 +20,7 @@ describe('Combat', () => {
         speed: 1,
         courage: make_gauge(5),
         strength: 1,
+        armor_locations: make_armor_locations()
     }
 
     const test_enemy: Monster = {
@@ -76,6 +79,49 @@ describe('Combat', () => {
         })
     })
 
+    describe('hero_takes_hit', () => {
+
+        const hth_hero = {
+            ...cloneDeep(test_hero),
+            armor_locations: {
+                head: 2,
+                arms: 2,
+                body: 2,
+                waist: 2,
+                legs: 2,
+            }
+        }
+
+        const hth_enemy = {
+            ...cloneDeep(test_enemy),
+            strength: 1
+        }
+
+        const die_roll_for_location = (location: string): number => {
+            switch (location) {
+                case 'head': return 1;
+                case 'arms': return 2;
+                case 'body': return 3;
+                case 'waist': return 5;
+                case 'legs': return 6;
+                default: return 4;
+            }
+        }
+
+        it.each([
+            'head', 'arms', 'body', 'waist', 'legs'
+        ])("hero takes hit to %s that doesn't pierce armor", (hit_location) => {
+            mockD6.mockReturnValueOnce(die_roll_for_location(hit_location))
+            const hero: Hero = cloneDeep(hth_hero)
+            const enemy: Monster = cloneDeep(hth_enemy)
+            hero_takes_hit(hero, enemy)
+            expect(hero.armor_locations[hit_location as keyof ArmorLocations]).toEqual(1)
+            Object.keys(hero.armor_locations).filter(x => x !== hit_location).forEach((hl) => {
+                expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(2)
+            })
+        })
+    })
+
     describe('enemy_takes_hit', () => {
 
         const eth_hero = {
@@ -120,4 +166,5 @@ describe('Combat', () => {
             expect(monster.hp.current).toEqual(monster.hp.maximum - 3)
         })
     })
+
 })

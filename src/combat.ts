@@ -1,6 +1,6 @@
 import type {Hero} from "./actors/hero.ts";
 import type {Monster} from "./actors/monster.ts";
-import {d10} from "./util/die.ts";
+import {d10, d6} from "./util/die.ts";
 import {clamp, range} from 'lodash';
 
 const did_hero_win_initiative = (hero: Hero, enemy: Monster) => {
@@ -14,8 +14,52 @@ const did_hero_win_initiative = (hero: Hero, enemy: Monster) => {
     return hero_passed;
 }
 
-const hero_takes_hit = (hero: Hero, enemy: Monster) => {
+export const hero_takes_hit = (hero: Hero, enemy: Monster) => {
+    const roll_hit_location = () => {
+        switch(d6()) {
+            case 1: return 'head'
+            case 2: return 'arms'
+            case 3:
+            case 4: return 'body'
+            case 5: return 'waist'
+            case 6: return 'legs'
+            default: return 'body'
+        }
+    }
 
+    const take_severe_wound = () => {
+        console.log(`${hero.name} suffers a severe ${hit_location} wound!`)
+        hero.courage.current -= 1
+        console.log(`${hero.name}'s courage is decreased to ${hero.courage.current}`)
+        if (current_armor > 0) {
+            hero.hp.current -= enemy.damage - current_armor
+        } else {
+            hero.hp.current -= enemy.damage
+        }
+        console.log(`${hero.name}'s hp is decreased to ${hero.hp.current}!`)
+    }
+
+    const hit_location = roll_hit_location()
+    const current_armor = hero.armor_locations[hit_location]
+
+    console.log(`${enemy.name} hits ${hero.name} in the ${hit_location} for ${enemy.damage}`)
+    if (hit_location === 'head') {
+        if (hero.armor_locations['head'] > -1) {
+            hero.armor_locations['head'] -= enemy.damage
+        }
+        if (hero.armor_locations['head'] <= -1) {
+            take_severe_wound()
+        }
+    } else {
+        if (hero.armor_locations[hit_location] > -2) {
+            hero.armor_locations[hit_location] -= enemy.damage
+        }
+        if (hero.armor_locations[hit_location] == -1) {
+            console.log(`${hero.name} suffers a light ${hit_location} wound!`)
+        } else if (hero.armor_locations[hit_location] == -2) {
+            take_severe_wound()
+        }
+    }
 };
 
 export const enemy_takes_hit = (defender: Monster, attacker: Hero) => {
