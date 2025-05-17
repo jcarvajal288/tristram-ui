@@ -9,12 +9,12 @@ export type Hero = Creature & {
 export const generate_hero = (name: string): Hero => {
     return {
         name: name,
-        accuracy: 0,
+        accuracy: 7,
         evasion: 0,
         hp: make_gauge(5),
         luck: 0,
-        speed: 0,
+        speed: 1,
         courage: make_gauge(5),
-        strength: 0,
+        strength: 1,
     }
 }
