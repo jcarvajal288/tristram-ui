@@ -25,7 +25,7 @@ export const enemy_takes_hit = (defender: Monster, attacker: Hero) => {
     defender.hp.current -= damage_dealt
 }
 
-const hero_turn = (hero: Hero, enemy: Monster) => {
+export const hero_turn = (hero: Hero, enemy: Monster) => {
     range(hero.speed).forEach(() => {
         const attack_roll = d10()
         const target = hero.accuracy + enemy.evasion

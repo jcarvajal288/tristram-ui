@@ -2,7 +2,7 @@ import {describe, it, expect, vi} from "vitest";
 import {type Hero} from "../actors/hero.ts";
 import {type Monster} from "../actors/monster.ts";
 import * as Die from "../util/die.ts"
-import {enemy_takes_hit, run_combat_round} from "../combat.ts";
+import {enemy_takes_hit, hero_turn, run_combat_round} from "../combat.ts";
 import {make_gauge} from "../util/gauge.ts";
 import {cloneDeep} from "lodash";
 
@@ -20,7 +20,7 @@ describe('Combat', () => {
         strength: 1,
     }
 
-    const test_monster: Monster = {
+    const test_enemy: Monster = {
         name: "Fallen",
         accuracy: 5,
         evasion: 0,
@@ -43,9 +43,37 @@ describe('Combat', () => {
         ].forEach(value => mockD10.mockReturnValueOnce(value))
 
         const hero = cloneDeep(test_hero)
-        const monster = cloneDeep(test_monster)
+        const monster = cloneDeep(test_enemy)
         run_combat_round(hero, monster)
         expect(monster.hp.current).toEqual(2)
+    })
+
+    describe('hero_turn', () => {
+
+        const ht_hero = {
+            ...cloneDeep(test_hero),
+            accuracy: 5
+        }
+
+        const ht_enemy = {
+            ...cloneDeep(test_enemy),
+        }
+
+        it('hero misses enemy', () => {
+            mockD10.mockReturnValueOnce(4)
+            const hero: Hero = cloneDeep(ht_hero)
+            const enemy: Monster = cloneDeep(ht_enemy)
+            hero_turn(hero, enemy)
+            expect(enemy.hp.current).toEqual(enemy.hp.maximum)
+        })
+
+        it('hero hits enemy', () => {
+            mockD10.mockReturnValueOnce(5)
+            const hero: Hero = cloneDeep(ht_hero)
+            const enemy: Monster = cloneDeep(ht_enemy)
+            hero_turn(hero, enemy)
+            expect(enemy.hp.current).toEqual(enemy.hp.maximum - 1)
+        })
     })
 
     describe('enemy_takes_hit', () => {
@@ -56,7 +84,7 @@ describe('Combat', () => {
         }
 
         const eth_enemy = {
-            ...cloneDeep(test_monster),
+            ...cloneDeep(test_enemy),
             toughness: 5
         }
 
