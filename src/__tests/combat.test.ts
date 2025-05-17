@@ -1,9 +1,10 @@
 import {describe, it, expect, vi} from "vitest";
-import {generate_hero, type Hero} from "../actors/hero.ts";
-import {fallen, type Monster} from "../actors/monster.ts";
+import {type Hero} from "../actors/hero.ts";
+import {type Monster} from "../actors/monster.ts";
 import * as Die from "../util/die.ts"
-import {run_combat_round} from "../combat.ts";
+import {enemy_takes_hit, run_combat_round} from "../combat.ts";
 import {make_gauge} from "../util/gauge.ts";
+import {cloneDeep} from "lodash";
 
 describe('Combat', () => {
 
@@ -41,9 +42,54 @@ describe('Combat', () => {
             hero_damage_roll
         ].forEach(value => mockD10.mockReturnValueOnce(value))
 
-        const hero = { ...test_hero }
-        const monster = { ...test_monster }
+        const hero = cloneDeep(test_hero)
+        const monster = cloneDeep(test_monster)
         run_combat_round(hero, monster)
         expect(monster.hp.current).toEqual(2)
+    })
+
+    describe('enemy_takes_hit', () => {
+
+        const eth_hero = {
+            ...cloneDeep(test_hero),
+            strength: 3
+        }
+
+        const eth_enemy = {
+            ...cloneDeep(test_monster),
+            toughness: 5
+        }
+
+        it('enemy takes hit below toughness', () => {
+            mockD10.mockReturnValueOnce(1)
+            const monster = cloneDeep(eth_enemy)
+            const hero = cloneDeep(eth_hero)
+            enemy_takes_hit(monster, hero)
+            expect(monster.hp.current).toEqual(monster.hp.maximum)
+        })
+
+        it('enemy takes hit at exact toughness', () => {
+            mockD10.mockReturnValueOnce(2)
+            const monster = cloneDeep(eth_enemy)
+            const hero = cloneDeep(eth_hero)
+            enemy_takes_hit(monster, hero)
+            expect(monster.hp.current).toEqual(monster.hp.maximum)
+        })
+
+        it('enemy takes hit above toughness and below hero strength', () => {
+            mockD10.mockReturnValueOnce(4)
+            const monster = cloneDeep(eth_enemy)
+            const hero = cloneDeep(eth_hero)
+            enemy_takes_hit(monster, hero)
+            expect(monster.hp.current).toEqual(monster.hp.maximum - 2)
+        })
+
+        it('enemy takes hit above toughness and above hero strength', () => {
+            mockD10.mockReturnValueOnce(7)
+            const monster = cloneDeep(eth_enemy)
+            const hero = cloneDeep(eth_hero)
+            enemy_takes_hit(monster, hero)
+            expect(monster.hp.current).toEqual(monster.hp.maximum - 3)
+        })
     })
 })

@@ -18,9 +18,9 @@ const hero_takes_hit = (hero: Hero, enemy: Monster) => {
 
 };
 
-const enemy_takes_hit = (defender: Monster, attacker: Hero) => {
+export const enemy_takes_hit = (defender: Monster, attacker: Hero) => {
     const damage_roll = d10() + attacker.strength
-    const damage_dealt = clamp(damage_roll, 0, attacker.strength)
+    const damage_dealt = clamp(damage_roll - defender.toughness, 0, attacker.strength)
     console.log(`${attacker.name} hits ${defender.name} for ${damage_dealt} damage (rolled ${damage_roll} vs ${defender.toughness})`)
     defender.hp.current -= damage_dealt
 }
