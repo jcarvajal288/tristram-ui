@@ -110,7 +110,7 @@ describe('Combat', () => {
 
         it.each([
             'head', 'arms', 'body', 'waist', 'legs'
-        ])("hero takes hit to %s that doesn't pierce armor", (hit_location) => {
+        ])("hero takes hit to the %s that doesn't pierce armor", (hit_location) => {
             mockD6.mockReturnValueOnce(die_roll_for_location(hit_location))
             const hero: Hero = cloneDeep(hth_hero)
             const enemy: Monster = cloneDeep(hth_enemy)
@@ -119,6 +119,50 @@ describe('Combat', () => {
             Object.keys(hero.armor_locations).filter(x => x !== hit_location).forEach((hl) => {
                 expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(2)
             })
+            expect(hero.hp.current).toEqual(hero.hp.maximum)
+        })
+
+        it.each([
+            'arms', 'body', 'waist', 'legs'
+        ])("hero takes hit to the %s that gives light wound", (hit_location) => {
+            mockD6.mockReturnValueOnce(die_roll_for_location(hit_location))
+            const hero: Hero = cloneDeep(hth_hero)
+            const enemy: Monster = cloneDeep(hth_enemy)
+            enemy.damage = 3
+            hero_takes_hit(hero, enemy)
+            expect(hero.armor_locations[hit_location as keyof ArmorLocations]).toEqual(-1)
+            Object.keys(hero.armor_locations).filter(x => x !== hit_location).forEach((hl) => {
+                expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(2)
+            })
+            expect(hero.hp.current).toEqual(hero.hp.maximum)
+        })
+
+        it("hero takes hit to the head that gives severe wound", () => {
+            mockD6.mockReturnValueOnce(die_roll_for_location('head'))
+            const hero: Hero = cloneDeep(hth_hero)
+            const enemy: Monster = cloneDeep(hth_enemy)
+            enemy.damage = 5
+            hero_takes_hit(hero, enemy)
+            expect(hero.armor_locations['head']).toEqual(-1);
+            ['arms', 'body', 'waist', 'legs'].forEach((hl) => {
+                expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(2)
+            })
+            expect(hero.hp.current).toEqual(hero.hp.maximum - 3)
+        })
+
+        it.each([
+            'arms', 'body', 'waist', 'legs'
+        ])("hero takes hit to the %s that gives severe wound", (hit_location) => {
+            mockD6.mockReturnValueOnce(die_roll_for_location(hit_location))
+            const hero: Hero = cloneDeep(hth_hero)
+            const enemy: Monster = cloneDeep(hth_enemy)
+            enemy.damage = 5
+            hero_takes_hit(hero, enemy)
+            expect(hero.armor_locations[hit_location as keyof ArmorLocations]).toEqual(-2)
+            Object.keys(hero.armor_locations).filter(x => x !== hit_location).forEach((hl) => {
+                expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(2)
+            })
+            expect(hero.hp.current).toEqual(hero.hp.maximum - 3)
         })
     })
 

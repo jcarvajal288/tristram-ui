@@ -46,6 +46,9 @@ export const hero_takes_hit = (hero: Hero, enemy: Monster) => {
     if (hit_location === 'head') {
         if (hero.armor_locations['head'] > -1) {
             hero.armor_locations['head'] -= enemy.damage
+            if (hero.armor_locations['head'] < -1) {
+                hero.armor_locations['head'] = -1
+            }
         }
         if (hero.armor_locations['head'] <= -1) {
             take_severe_wound()
@@ -53,6 +56,9 @@ export const hero_takes_hit = (hero: Hero, enemy: Monster) => {
     } else {
         if (hero.armor_locations[hit_location] > -2) {
             hero.armor_locations[hit_location] -= enemy.damage
+            if (hero.armor_locations[hit_location] < -2) {
+                hero.armor_locations[hit_location] = -2
+            }
         }
         if (hero.armor_locations[hit_location] == -1) {
             console.log(`${hero.name} suffers a light ${hit_location} wound!`)
