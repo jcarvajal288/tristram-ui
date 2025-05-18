@@ -79,7 +79,7 @@ export const hero_turn = (hero: Hero, enemy: Monster) => {
     range(hero.speed).forEach(() => {
         const attack_roll = d10()
         const target = hero.accuracy + enemy.evasion
-        console.log(`${hero.name} attacks ${enemy.name} (rolled ${attack_roll} vs ${target}`);
+        console.log(`${hero.name} attacks ${enemy.name} (rolled ${attack_roll} vs ${target})`);
         if (attack_roll >= target) {
             enemy_takes_hit(enemy, hero)
             if (enemy.hp.current <= 0) {
@@ -107,9 +107,11 @@ export const run_combat_round = (hero: Hero, enemy: Monster) => {
     console.log("=== New Combat Round ===")
     if (did_hero_win_initiative(hero, enemy)) {
         hero_turn(hero, enemy)
+        if (enemy.hp.current <= 0) return;
         enemy_turn(hero, enemy)
     } else {
         enemy_turn(hero, enemy)
+        if (hero.hp.current <= 0) return;
         hero_turn(hero, enemy)
     }
 }
