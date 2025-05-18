@@ -2,7 +2,7 @@ import {describe, it, expect, vi, beforeEach} from "vitest";
 import {type Hero, type ArmorLocations, make_armor_locations} from "../actors/hero.ts";
 import {type Monster} from "../actors/monster.ts";
 import * as Die from "../util/die.ts"
-import {enemy_takes_hit, enemy_turn, hero_takes_hit, hero_turn, run_combat_round} from "../combat.ts";
+import {enemy_takes_hit, enemy_turn, hero_takes_hit, hero_turn, run_combat, run_combat_round} from "../combat.ts";
 import {make_gauge} from "../util/gauge.ts";
 import {cloneDeep} from "lodash";
 
@@ -40,16 +40,22 @@ describe('Combat', () => {
     it('both hero and enemy miss each other', () => {
         const hero_init_roll = 8
         const enemy_init_roll = 3
-        const hero_attack_roll = 8;
-        const hero_damage_roll = 5;
-        const enemy_attack_roll = 5;
+        const hero_attack_roll = 6;
+        const enemy_attack_roll = 4;
         [
             hero_init_roll,
             enemy_init_roll,
             hero_attack_roll,
-            hero_damage_roll,
             enemy_attack_roll
         ].forEach(value => mockD10.mockReturnValueOnce(value))
+
+        const hero = cloneDeep(test_hero)
+        const enemy = cloneDeep(test_enemy)
+        run_combat_round(hero, enemy)
+        expect(enemy.hp.current).toEqual(enemy.hp.maximum)
+        Object.keys(hero.armor_locations).forEach((hl) => {
+            expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(0);
+        })
     })
 
     it('hero kills enemy before enemy can act', () => {
@@ -295,4 +301,50 @@ describe('Combat', () => {
         })
     })
 
+    describe('full combat', () => {
+
+        it('hero wins', () => {
+            const hero_init_roll = 5 // wins
+            const enemy_init_roll = 2 // loses
+            const hero_attack_roll = 7; // hits
+            const hero_damage_roll = 3; // does 1 damage
+            const enemy_attack_roll = 7; // hits
+            const hit_location_roll = 1; // head for 1 damage
+            const hero_init_roll2 = 3; // loses
+            const enemy_init_roll2 = 4; // wins
+            const enemy_attack_roll2 = 8; // hits
+            const hit_location_roll2 = 2; // arms for 1 damage
+            const hero_attack_roll2 = 9; // hits
+            const hero_damage_roll2 = 9; // 2 damage (kill)
+            [
+                hero_init_roll,
+                enemy_init_roll,
+                hero_attack_roll,
+                hero_damage_roll,
+                enemy_attack_roll,
+                hero_init_roll2,
+                enemy_init_roll2,
+                enemy_attack_roll2,
+                hero_attack_roll2,
+                hero_damage_roll2,
+            ].forEach(value => mockD10.mockReturnValueOnce(value));
+            [
+                hit_location_roll,
+                hit_location_roll2,
+            ].forEach(value => mockD6.mockReturnValueOnce(value));
+            const hero = cloneDeep(test_hero);
+            hero.strength = 2;
+            const enemy = cloneDeep(test_enemy)
+            enemy.toughness = 4;
+            run_combat(hero, enemy);
+            expect(enemy.hp.current).toEqual(0);
+            ['body', 'waist', 'legs'].forEach((hl) => {
+                expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(0)
+            })
+            expect(hero.armor_locations['head']).toEqual(-1)
+            expect(hero.armor_locations['arms']).toEqual(-1)
+            expect(hero.hp.current).toEqual(hero.hp.maximum - 1)
+            expect(hero.courage.current).toEqual(hero.courage.maximum - 1)
+        })
+    })
 })

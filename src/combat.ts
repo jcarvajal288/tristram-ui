@@ -83,7 +83,6 @@ export const hero_turn = (hero: Hero, enemy: Monster) => {
         if (attack_roll >= target) {
             enemy_takes_hit(enemy, hero)
             if (enemy.hp.current <= 0) {
-                console.log(`${enemy.name} dies!`)
                 return
             }
         } else {
@@ -113,5 +112,23 @@ export const run_combat_round = (hero: Hero, enemy: Monster) => {
         enemy_turn(hero, enemy)
         if (hero.hp.current <= 0) return;
         hero_turn(hero, enemy)
+    }
+}
+
+export const run_combat = (hero: Hero, enemy: Monster) => {
+    while (true) {
+        run_combat_round(hero, enemy)
+        if (enemy.hp.current <= 0) {
+            console.log(`${enemy.name} dies!`)
+            break;
+        }
+        if (hero.hp.current <= 0) {
+            console.log(`${hero.name} has died!`)
+            break;
+        }
+        if (hero.courage.current <= 0) {
+            console.log(`${hero.name} retreats!`)
+            break;
+        }
     }
 }
