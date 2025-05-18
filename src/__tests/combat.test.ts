@@ -2,7 +2,7 @@ import {describe, it, expect, vi} from "vitest";
 import {type Hero, type ArmorLocations, make_armor_locations} from "../actors/hero.ts";
 import {type Monster} from "../actors/monster.ts";
 import * as Die from "../util/die.ts"
-import {enemy_takes_hit, hero_takes_hit, hero_turn, run_combat_round} from "../combat.ts";
+import {enemy_takes_hit, enemy_turn, hero_takes_hit, hero_turn, run_combat_round} from "../combat.ts";
 import {make_gauge} from "../util/gauge.ts";
 import {cloneDeep} from "lodash";
 
@@ -79,6 +79,43 @@ describe('Combat', () => {
         })
     })
 
+    describe('enemy turn', () => {
+        const et_hero = {
+            ...cloneDeep(test_hero),
+            evasion: 2,
+            armor_locations: {
+                head: 2,
+                arms: 2,
+                body: 2,
+                waist: 2,
+                legs: 2,
+            }
+        }
+
+        const et_enemy = {
+            ...cloneDeep(test_enemy),
+            accuracy: 5,
+            damage: 1
+        }
+
+        it('enemy misses hero', () => {
+            mockD10.mockReturnValueOnce(4)
+            const hero: Hero = cloneDeep(et_hero)
+            const enemy: Monster = cloneDeep(et_enemy)
+            enemy_turn(hero, enemy)
+            expect(hero.hp.current).toEqual(hero.hp.maximum)
+        })
+
+        it('enemy hits hero', () => {
+            mockD10.mockReturnValueOnce(7)
+            mockD6.mockReturnValueOnce(1)
+            const hero: Hero = cloneDeep(et_hero)
+            const enemy: Monster = cloneDeep(et_enemy)
+            enemy_turn(hero, enemy)
+            expect(hero.armor_locations['head']).toEqual(1)
+        })
+    })
+
     describe('hero_takes_hit', () => {
 
         const hth_hero = {
@@ -148,6 +185,7 @@ describe('Combat', () => {
                 expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(2)
             })
             expect(hero.hp.current).toEqual(hero.hp.maximum - 3)
+            expect(hero.courage.current).toEqual(hero.courage.maximum - 1)
         })
 
         it.each([
@@ -163,6 +201,7 @@ describe('Combat', () => {
                 expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(2)
             })
             expect(hero.hp.current).toEqual(hero.hp.maximum - 3)
+            expect(hero.courage.current).toEqual(hero.courage.maximum - 1)
         })
     })
 

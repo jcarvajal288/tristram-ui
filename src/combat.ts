@@ -92,7 +92,7 @@ export const hero_turn = (hero: Hero, enemy: Monster) => {
     })
 };
 
-const enemy_turn = (hero: Hero, enemy: Monster) => {
+export const enemy_turn = (hero: Hero, enemy: Monster) => {
     range(enemy.speed).forEach(() => {
         const attack_roll = d10()
         const target = enemy.accuracy + hero.evasion
