@@ -24,7 +24,7 @@ describe('Combat', () => {
     }
 
     const test_enemy: Monster = {
-        name: "Fallen",
+        name: "Test Monster",
         accuracy: 5,
         evasion: 0,
         luck: 0,
@@ -33,22 +33,30 @@ describe('Combat', () => {
         toughness: 2,
         damage: 1    }
 
-    it('Hero can hit enemy and do damage', () => {
+    it('Both hero and enemy hit each other', () => {
         const hero_init_roll = 8
         const enemy_init_roll = 3
         const hero_attack_roll = 8;
         const hero_damage_roll = 5;
+        const enemy_attack_roll = 5;
         [
             hero_init_roll,
             enemy_init_roll,
             hero_attack_roll,
-            hero_damage_roll
+            hero_damage_roll,
+            enemy_attack_roll
         ].forEach(value => mockD10.mockReturnValueOnce(value))
+
+        mockD6.mockReturnValueOnce(4)
 
         const hero = cloneDeep(test_hero)
         const monster = cloneDeep(test_enemy)
         run_combat_round(hero, monster)
         expect(monster.hp.current).toEqual(2)
+        expect(hero.armor_locations['body']).toEqual(-1);
+        ['head', 'arms', 'waist', 'legs'].forEach((hl) => {
+            expect(hero.armor_locations[hl as keyof ArmorLocations]).toEqual(0);
+        })
     })
 
     describe('hero_turn', () => {
