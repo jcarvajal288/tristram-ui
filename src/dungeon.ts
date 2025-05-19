@@ -1,6 +1,7 @@
 import {fallen, horror, type Monster} from "./actors/monster.ts";
 import {d10, d6} from "./util/die.ts";
 import {range} from "lodash";
+import type {Hero} from "./actors/hero.ts";
 
 export type Dungeon = {
     current_room: number
@@ -36,4 +37,8 @@ export const create_dungeon = (num_rooms: number): Dungeon => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         rooms: range(num_rooms).map((_) => create_room())
     }
+}
+
+export const enter_dungeon = (hero: Hero) => {
+    console.log(`${hero.name} enters the dungeon`)
 }

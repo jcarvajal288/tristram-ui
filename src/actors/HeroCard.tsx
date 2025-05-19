@@ -16,10 +16,10 @@ const HeroCard = (props: { hero: Hero }) => {
             <Typography variant='h5'>{props.hero.name}</Typography>
             <Stack direction='row' gap={1}>
                 <StatLabel label='Accuracy' amount={props.hero.accuracy}/>
-                <StatLabel label='Strength' amount={props.hero.accuracy}/>
-                <StatLabel label='Evasion' amount={props.hero.accuracy}/>
-                <StatLabel label='Luck' amount={props.hero.accuracy}/>
-                <StatLabel label='Speed' amount={props.hero.accuracy}/>
+                <StatLabel label='Strength' amount={props.hero.strength}/>
+                <StatLabel label='Evasion' amount={props.hero.evasion}/>
+                <StatLabel label='Luck' amount={props.hero.luck}/>
+                <StatLabel label='Speed' amount={props.hero.speed}/>
             </Stack>
         </Stack>
     )
