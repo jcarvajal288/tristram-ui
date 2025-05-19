@@ -18,3 +18,16 @@ export const fallen = (): Monster => {
         damage: 1
     }
 }
+
+export const horror = (): Monster => {
+    return {
+        accuracy: 4,
+        damage: 2,
+        evasion: 0,
+        hp: make_gauge(8),
+        luck: 0,
+        name: "Horror",
+        speed: 2,
+        toughness: 6
+    }
+}
