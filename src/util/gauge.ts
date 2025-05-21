@@ -11,3 +11,8 @@ export const make_gauge = (max: number) => {
         maximum: max
     }
 }
+
+export const set_gauge = (gauge: Gauge, new_max: number) => {
+    gauge.current = new_max;
+    gauge.maximum = new_max;
+}

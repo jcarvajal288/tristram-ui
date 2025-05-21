@@ -2,7 +2,15 @@ import {describe, it, expect, vi, beforeEach} from "vitest";
 import {type Hero, type ArmorLocations, make_armor_locations} from "../actors/hero.ts";
 import {type Monster} from "../actors/monster.ts";
 import * as Die from "../util/die.ts"
-import {enemy_takes_hit, enemy_turn, hero_takes_hit, hero_turn, run_combat, run_combat_round} from "../combat.ts";
+import {
+    did_hero_win_initiative,
+    enemy_takes_hit,
+    enemy_turn,
+    hero_takes_hit,
+    hero_turn,
+    run_combat,
+    run_combat_round
+} from "../combat.ts";
 import {make_gauge} from "../util/gauge.ts";
 import {cloneDeep} from "lodash";
 
@@ -345,6 +353,115 @@ describe('Combat', () => {
             expect(hero.armor_locations['arms']).toEqual(-1)
             expect(hero.hp.current).toEqual(hero.hp.maximum - 1)
             expect(hero.courage.current).toEqual(hero.courage.maximum - 1)
+        })
+    })
+
+    describe('initiative', () => {
+
+        const init_hero = {
+            ...cloneDeep(test_hero),
+            speed: 5
+        }
+
+        const init_enemy = {
+            ...cloneDeep(test_enemy),
+            speed: 5
+        }
+
+        it('Both sides fail, but hero rolls higher', () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            const hero_roll = 3;
+            const enemy_roll = 2;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(true)
+        })
+
+        it('Both sides fail, but enemy rolls higher', () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            const hero_roll = 3;
+            const enemy_roll = 4;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(false)
+        })
+
+        it("Hero has higher roll, but enemy's roll is under their speed", () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            hero.speed = 2
+            hero.evasion = 0
+            enemy.speed = 5
+            enemy.evasion = 0
+            const hero_roll = 4;
+            const enemy_roll = 3;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(false)
+        })
+
+        it("Hero has lower roll, but his roll is under his speed", () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            hero.speed = 5
+            hero.evasion = 0
+            enemy.speed = 2
+            enemy.evasion = 0
+            const hero_roll = 3;
+            const enemy_roll = 4;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(true)
+        })
+
+        it("Hero has higher roll, and both rolls are under their respective speeds", () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            hero.speed = 5
+            hero.evasion = 0
+            enemy.speed = 5
+            enemy.evasion = 0
+            const hero_roll = 4;
+            const enemy_roll = 3;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(true)
+        })
+
+        it("Enemy has higher roll, and both rolls are under their respective speeds", () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            hero.speed = 5
+            hero.evasion = 0
+            enemy.speed = 5
+            enemy.evasion = 0
+            const hero_roll = 3;
+            const enemy_roll = 4;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(false)
+        })
+
+        it("Hero has lower roll but high evasion", () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            hero.speed = 5
+            hero.evasion = 2
+            enemy.speed = 5
+            enemy.evasion = 0
+            const hero_roll = 3;
+            const enemy_roll = 4;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(true)
+        })
+
+        it("Enemy has lower roll but high evasion", () => {
+            const hero = cloneDeep(init_hero)
+            const enemy = cloneDeep(init_enemy)
+            hero.speed = 5
+            hero.evasion = 0
+            enemy.speed = 5
+            enemy.evasion = 2
+            const hero_roll = 4;
+            const enemy_roll = 3;
+            [hero_roll, enemy_roll].forEach((value) => mockD10.mockReturnValueOnce(value))
+            expect(did_hero_win_initiative(hero, enemy)).toEqual(false)
         })
     })
 })

@@ -48,7 +48,13 @@ export const enter_room = (room: Room, hero: Hero) => {
 
 export const enter_dungeon = (dungeon: Dungeon, hero: Hero) => {
     console.log(`${hero.name} enters the dungeon`)
-    dungeon.rooms.forEach((room) => {
+    for (const room of dungeon.rooms) {
         enter_room(room, hero)
-    })
+        if (hero.hp.current <= 0) {
+            break;
+        }
+        if (hero.courage.current <= 0) {
+            break;
+        }
+    }
 }

@@ -3,15 +3,20 @@ import type {Monster} from "./actors/monster.ts";
 import {d10, d6} from "./util/die.ts";
 import {clamp, range} from 'lodash';
 
-const did_hero_win_initiative = (hero: Hero, enemy: Monster) => {
-    const hero_roll = d10() + hero.evasion
-    const enemy_roll = d10() + enemy.evasion
-    const hero_passed = hero_roll < hero.speed
-    const enemy_passed = enemy_roll < enemy.speed
-    if (hero_passed && enemy_passed || !hero_passed && !enemy_passed) {
-        return hero_roll >= enemy_roll
+export const did_hero_win_initiative = (hero: Hero, enemy: Monster) => {
+    const hero_roll = d10()
+    const enemy_roll = d10()
+    const hero_passed = hero_roll < hero.speed + hero.evasion
+    const enemy_passed = enemy_roll < enemy.speed + enemy.evasion
+    const did_hero_win = (hero_passed && enemy_passed || !hero_passed && !enemy_passed)
+        ? hero_roll + hero.evasion >= enemy_roll + enemy.evasion
+        : hero_passed;
+    if (did_hero_win) {
+        console.log(`${hero.name} wins initiative (${hero_roll} vs ${enemy_roll})`)
+    } else {
+        console.log(`${hero.name} loses initiative (${hero_roll} vs ${enemy_roll})`)
     }
-    return hero_passed;
+    return did_hero_win
 }
 
 export const hero_takes_hit = (hero: Hero, enemy: Monster) => {

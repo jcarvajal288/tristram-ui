@@ -1,9 +1,10 @@
-import {describe, it, expect, vi} from "vitest";
+import {describe, it, expect, vi, beforeEach} from "vitest";
 import * as Die from "../util/die.ts";
 import * as Combat from "../combat.ts"
 import * as Dungeon from "../dungeon.ts"
-import {generate_hero} from "../actors/hero.ts";
+import {generate_hero, type Hero} from "../actors/hero.ts";
 import {cloneDeep} from "lodash";
+import {set_gauge} from "../util/gauge.ts";
 
 describe('Dungeon', () => {
 
@@ -46,6 +47,10 @@ describe('Dungeon', () => {
 
     const test_dungeon = create_test_dungeon()
 
+    beforeEach(() => {
+        vi.resetAllMocks()
+    })
+
     it('should create a 5 room dungeon', () => {
         const dungeon = cloneDeep(test_dungeon);
         expect(dungeon.rooms).toHaveLength(5)
@@ -69,5 +74,65 @@ describe('Dungeon', () => {
 
         Dungeon.enter_dungeon(dungeon, hero);
         expect(run_combat_spy).toHaveBeenCalledTimes(3);
+    })
+
+    it('hero dies before fighting final monster', () => {
+        const dungeon = cloneDeep(test_dungeon)
+        const hero: Hero = generate_hero('Test Hero');
+        hero.hp.current = 1
+        hero.strength = 10
+
+        const hero_initiative_roll = 10
+        const enemy_initiative_roll = 1
+        const hero_attack_roll = 10
+        const hero_damage_roll = 10
+        const hero_initiative_roll2 = 1
+        const enemy_initiative_roll2 = 10
+        const enemy_attack_roll = 10;
+        [
+            hero_initiative_roll,
+            enemy_initiative_roll,
+            hero_attack_roll,
+            hero_damage_roll,
+            hero_initiative_roll2,
+            enemy_initiative_roll2,
+            enemy_attack_roll
+        ].forEach((value) => mockD10.mockReturnValueOnce(value))
+        mockD6.mockReturnValueOnce(1)
+
+        Dungeon.enter_dungeon(dungeon, hero);
+        expect(run_combat_spy).toHaveBeenCalledTimes(2);
+    })
+
+    it('hero loses courage before fighting final monster', () => {
+        const dungeon = cloneDeep(test_dungeon)
+        const hero: Hero = generate_hero('Test Hero');
+        hero.hp.current = 100
+        set_gauge(hero.courage, 2)
+
+        const hero_initiative_roll = 9
+        const enemy_initiative_roll = 1
+        const hero_attack_roll = 1
+        const hero_damage_roll = 1
+        const enemy_attack_roll = 9
+        const enemy_damage_roll = 9
+        const hero_initiative_roll2 = 1
+        const enemy_initiative_roll2 = 9
+        const enemy_attack_roll2 = 9;
+        [
+            hero_initiative_roll,
+            enemy_initiative_roll,
+            hero_attack_roll,
+            hero_damage_roll,
+            enemy_attack_roll,
+            enemy_damage_roll,
+            hero_initiative_roll2,
+            enemy_initiative_roll2,
+            enemy_attack_roll2
+        ].forEach((value) => mockD10.mockReturnValueOnce(value));
+        [1, 1, 1, 1].forEach((value) => mockD6.mockReturnValueOnce(value))
+
+        Dungeon.enter_dungeon(dungeon, hero);
+        expect(run_combat_spy).toHaveBeenCalledTimes(1);
     })
 })
