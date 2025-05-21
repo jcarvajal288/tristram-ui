@@ -3,10 +3,11 @@ import {generate_hero, type Hero} from "./actors/hero.ts";
 import HeroCard from "./actors/HeroCard.tsx";
 import {Button, Stack} from "@mui/material";
 import {useEffect, useState} from 'react';
-import {enter_dungeon} from "./dungeon.ts";
+import {create_dungeon, type Dungeon, enter_dungeon} from "./dungeon.ts";
 
 const App = () => {
     const [heroes, setHeroes] = useState<Hero[]>([])
+    const [dungeon, setDungeon] = useState<Dungeon>(create_dungeon(20))
 
     useEffect(() => {
         setHeroes([
@@ -24,7 +25,7 @@ const App = () => {
                     <HeroCard hero={hero}/>
                     <Button
                         data-testid={`${hero.name}-enter-dungeon`}
-                        onClick={() => enter_dungeon(hero)}
+                        onClick={() => enter_dungeon(dungeon, hero)}
                     >
                         Enter Dungeon
                     </Button>

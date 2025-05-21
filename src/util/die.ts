@@ -1,4 +1,4 @@
-const die = (max: number) => Math.floor(Math.random() + max) + 1
+const die = (max: number) => Math.floor(Math.random() * (max + 1)) + 1
 
 export const d6 = () => die(6)
 

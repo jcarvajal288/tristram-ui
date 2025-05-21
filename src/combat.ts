@@ -116,6 +116,7 @@ export const run_combat_round = (hero: Hero, enemy: Monster) => {
 }
 
 export const run_combat = (hero: Hero, enemy: Monster) => {
+    console.log(`${hero.name} fights a ${enemy.name}`)
     while (true) {
         run_combat_round(hero, enemy)
         if (enemy.hp.current <= 0) {
