@@ -1,13 +1,12 @@
 import './App.css'
 import {generate_hero, type Hero} from "./actors/hero.ts";
-import HeroCard from "./actors/HeroCard.tsx";
-import {Button, Stack} from "@mui/material";
 import {useEffect, useState} from 'react';
-import {create_dungeon, type Dungeon, enter_dungeon} from "./dungeon.ts";
+import {create_dungeon, type Dungeon} from "./dungeon.ts";
+import {HeroRoster} from "./actors/HeroRoster.tsx";
 
 const App = () => {
     const [heroes, setHeroes] = useState<Hero[]>([])
-    const [dungeon, setDungeon] = useState<Dungeon>(create_dungeon(20))
+    const dungeon: Dungeon = create_dungeon(20)
 
     useEffect(() => {
         setHeroes([
@@ -17,22 +16,10 @@ const App = () => {
         ])
     }, [])
 
+    useEffect(() => {}, [heroes])
+
     return (
-        <Stack>
-        {
-            heroes.map((hero: Hero) => (
-                <Stack direction='row' key={`${hero.name}`}>
-                    <HeroCard hero={hero}/>
-                    <Button
-                        data-testid={`${hero.name}-enter-dungeon`}
-                        onClick={() => enter_dungeon(dungeon, hero)}
-                    >
-                        Enter Dungeon
-                    </Button>
-                </Stack>
-            ))
-        }
-        </Stack>
+        <HeroRoster heroes={heroes} dungeon={dungeon}/>
     )
 };
 

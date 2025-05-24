@@ -1,10 +1,10 @@
 import {describe, it, expect, vi, beforeEach} from "vitest";
 import * as Die from "../util/die.ts";
 import * as Combat from "../combat.ts"
-import * as Dungeon from "../dungeon.ts"
 import {generate_hero, type Hero} from "../actors/hero.ts";
 import {cloneDeep} from "lodash";
 import {set_gauge} from "../util/gauge.ts";
+import {create_dungeon, enter_dungeon} from "../dungeon.ts";
 
 describe('Dungeon', () => {
 
@@ -42,7 +42,7 @@ describe('Dungeon', () => {
             room4_gold_roll,
             room5_gold_roll,
         ].forEach((roll) => mockD6.mockReturnValueOnce(roll))
-        return Dungeon.create_dungeon(5)
+        return create_dungeon(5)
     };
 
     const test_dungeon = create_test_dungeon()
@@ -66,14 +66,17 @@ describe('Dungeon', () => {
         expect(dungeon.rooms[4].gold).toEqual(0)
     })
 
-    it('hero fights each monster in the dungeon', () => {
+    it('hero kills each monster in the dungeon', () => {
         const dungeon = cloneDeep(test_dungeon)
         const hero = generate_hero('Test Hero');
         hero.hp.current = 999
         hero.strength = 10
 
-        Dungeon.enter_dungeon(dungeon, hero);
+        enter_dungeon(dungeon, hero);
         expect(run_combat_spy).toHaveBeenCalledTimes(3);
+        dungeon.rooms.forEach((room) => {
+            expect(room.enemies.length).toEqual(0)
+        })
     })
 
     it('hero dies before fighting final monster', () => {
@@ -100,8 +103,13 @@ describe('Dungeon', () => {
         ].forEach((value) => mockD10.mockReturnValueOnce(value))
         mockD6.mockReturnValueOnce(1)
 
-        Dungeon.enter_dungeon(dungeon, hero);
+        enter_dungeon(dungeon, hero);
         expect(run_combat_spy).toHaveBeenCalledTimes(2);
+        expect(dungeon.rooms[0].enemies.length).toEqual(0)
+        expect(dungeon.rooms[1].enemies.length).toEqual(0)
+        expect(dungeon.rooms[2].enemies.length).toEqual(1)
+        expect(dungeon.rooms[3].enemies.length).toEqual(1)
+        expect(dungeon.rooms[4].enemies.length).toEqual(0)
     })
 
     it('hero loses courage before fighting final monster', () => {
@@ -132,7 +140,17 @@ describe('Dungeon', () => {
         ].forEach((value) => mockD10.mockReturnValueOnce(value));
         [1, 1, 1, 1].forEach((value) => mockD6.mockReturnValueOnce(value))
 
-        Dungeon.enter_dungeon(dungeon, hero);
+        enter_dungeon(dungeon, hero);
         expect(run_combat_spy).toHaveBeenCalledTimes(1);
+    })
+
+    it('hero collects gold from the dungeon', () => {
+        const dungeon = cloneDeep(test_dungeon)
+        const hero: Hero = generate_hero('Test Hero');
+        hero.hp.current = 100
+        hero.courage.current = 100
+        hero.strength = 10
+        enter_dungeon(dungeon, hero)
+        expect(hero.gold).toEqual(5)
     })
 })

@@ -21,6 +21,10 @@ const HeroCard = (props: { hero: Hero }) => {
                 <StatLabel label='Luck' amount={props.hero.luck}/>
                 <StatLabel label='Speed' amount={props.hero.speed}/>
             </Stack>
+            <Stack direction='row' gap={1}>
+                <Typography>{`HP: ${props.hero.hp.current}/${props.hero.hp.maximum}`}</Typography>
+                <Typography>{`Gold: ${props.hero.gold}`}</Typography>
+            </Stack>
         </Stack>
     )
 }

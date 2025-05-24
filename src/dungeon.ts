@@ -43,7 +43,14 @@ export const enter_room = (room: Room, hero: Hero) => {
     console.log(`${hero.name} enters a new room`)
     room.enemies.forEach((enemy) => {
         run_combat(hero, enemy);
+        if (enemy.hp.current <= 0) {
+            room.enemies = room.enemies.filter((e) => e !== enemy)
+        }
     })
+    if (room.enemies.length <= 0) {
+        hero.gold += room.gold
+        room.gold = 0
+    }
 }
 
 export const enter_dungeon = (dungeon: Dungeon, hero: Hero) => {

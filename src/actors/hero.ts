@@ -5,6 +5,7 @@ export type Hero = Creature & {
     strength: number
     courage: Gauge
     armor_locations: ArmorLocations
+    gold: number
 }
 
 export const generate_hero = (name: string): Hero => {
@@ -17,7 +18,8 @@ export const generate_hero = (name: string): Hero => {
         speed: 1,
         courage: make_gauge(5),
         strength: 1,
-        armor_locations: make_armor_locations()
+        armor_locations: make_armor_locations(),
+        gold: 0
     }
 }
 
